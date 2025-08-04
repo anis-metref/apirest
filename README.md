@@ -58,6 +58,9 @@ python3 main.py
 2. Cliquer sur "Installer Apache"
 3. Voir l'exécution en temps réel
 
+![websocket](./images/2-websocket.png)
+
+
 ### 5.2. API REST
 - Documentation interactive : `http://localhost:8000/docs`
 - Endpoints disponibles :
@@ -110,9 +113,3 @@ ansible-websocket-interface/
 - **ansible-runner** - Exécution programmatique d'Ansible
 - **HTML/CSS/JavaScript** - Interface utilisateur web
 - **Python 3.11+** - Langage de programmation principal
-
-## 8. WebSocket
-
-• Ajout de la prise en charge de WebSocket pour le suivi temps réel de l'exécution des playbooks.
-
-![websocket](./images/2-websocket.png)
