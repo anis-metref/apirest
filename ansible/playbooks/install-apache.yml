@@ -1,0 +1,17 @@
+---
+- name: Installer Apache sur localhost
+  hosts: localhost
+  become: yes
+  
+  tasks:
+    - name: Installer Apache2
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+    
+    - name: Démarrer Apache
+      systemd:
+        name: apache2
+        state: started
+        enabled: yes

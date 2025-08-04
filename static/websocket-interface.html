@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ansible WebSocket Interface</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .button:hover { background: #0056b3; }
+        .output { background: #1e1e1e; color: #00ff00; padding: 15px; margin: 15px 0; height: 400px; overflow-y: scroll; font-family: 'Courier New', monospace; border-radius: 5px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ansible WebSocket Interface</h1>
+        <p>Installation Apache en temps réel via WebSocket</p>
+        
+        <button class="button" onclick="startInstall()" id="installBtn">Installer Apache</button>
+        <button class="button" onclick="clearOutput()" style="background: #6c757d;">Effacer</button>
+        
+        <div id="status" class="status info">
+            Prêt à installer Apache. Cliquez sur le bouton pour commencer.
+        </div>
+        
+        <div id="output" class="output">
+            <div style="color: #888;">Console d'installation - En attente...</div>
+        </div>
+    </div>
+
+    <script>
+        function startInstall() {
+            const output = document.getElementById('output');
+            const status = document.getElementById('status');
+            const btn = document.getElementById('installBtn');
+            
+            output.innerHTML = '<div style="color: #00ffff;">Connexion au WebSocket...</div>';
+            status.className = 'status info';
+            status.innerHTML = 'Installation en cours...';
+            btn.disabled = true;
+            btn.innerHTML = 'Installation...';
+            
+            // Détection automatique du protocole (HTTP/HTTPS)
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.host || 'localhost:8000';
+            const wsUrl = `${protocol}//${host}/ws/install-apache`;
+            
+            const ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function() {
+                addToOutput('Connexion WebSocket établie', '#00ffff');
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                if (data.status === 'start') {
+                    addToOutput(`${data.message}`, '#ffff00');
+                } else if (data.status === 'success') {
+                    addToOutput(`${data.message}`, '#00ff00');
+                    status.className = 'status success';
+                    status.innerHTML = 'Installation réussie !';
+                } else if (data.status === 'error') {
+                    addToOutput(`${data.message}`, '#ff0000');
+                    status.className = 'status error';
+                    status.innerHTML = 'Erreur lors de l\'installation';
+                } else if (data.output) {
+                    addToOutput(data.output, '#00ff00');
+                } else if (data.error) {
+                    addToOutput(`ERREUR: ${data.error}`, '#ff0000');
+                    if (data.help) {
+                        addToOutput(`Solution: ${data.help}`, '#ffff00');
+                    }
+                    status.className = 'status error';
+                    status.innerHTML = 'Erreur - Vérifiez la console';
+                }
+            };
+            
+            ws.onclose = function() {
+                addToOutput('Connexion fermée', '#888');
+                btn.disabled = false;
+                btn.innerHTML = 'Installer Apache';
+            };
+            
+            ws.onerror = function() {
+                addToOutput('Erreur de connexion WebSocket', '#ff0000');
+                status.className = 'status error';
+                status.innerHTML = 'Erreur de connexion';
+                btn.disabled = false;
+                btn.innerHTML = 'Installer Apache';
+            };
+        }
+        
+        function addToOutput(message, color = '#00ff00') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.style.color = color;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '<div style="color: #888;">Console effacée - Prêt pour une nouvelle installation...</div>';
+            document.getElementById('status').className = 'status info';
+            document.getElementById('status').innerHTML = 'Console effacée. Prêt à installer Apache.';
+        }
+    </script>
+</body>
+</html>
