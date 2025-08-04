@@ -67,6 +67,8 @@ python main.py
   - `POST /install-apache` - Installation Apache
   - `WebSocket /ws/install-apache` - Exécution temps réel
 
+![api](./images/1-swagger.png)
+
 ### 5.3. Tests via interface web
 ```bash
 # Lancer le serveur
@@ -112,3 +114,5 @@ ansible-websocket-interface/
 ## 8. WebSocket
 
 • Ajout de la prise en charge de WebSocket pour le suivi temps réel de l'exécution des playbooks.
+
+![websocket](./images/2-websocket.png)
