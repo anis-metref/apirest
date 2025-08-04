@@ -1,6 +1,6 @@
 # Construction d'une API REST avec FastAPI pour contrôler Ansible
 
-## 1. Objectifs pédagogiques
+## 1. Objectifs
 
 À l'issue de cette doc, vous serez capable de :
 • Mettre en place un environnement Python isolé destiné au développement d'une API REST.
@@ -14,9 +14,9 @@
 • Python ≥ 3.11 installé sur la machine (ou utilisation d'un conteneur Docker).
 • Accès réseau permettant l'installation de packages depuis PyPI.
 • Ansible et ansible-runner (ou ansible-core) installés.
-• Connaissances de base en HTTP et en ligne de commande (curl/httpie).
+• Connaissances de base en HTTP et en ligne de commande (curl/http).
 
-## 3. Contexte du TP
+## 3. Contexte du projet
 
 Vous êtes responsable d'automatiser la gestion d'une ferme de serveurs via Ansible. Pour des besoins d'intégration dans un portail interne, vous devez exposer certaines actions Ansible (exécution de playbooks, interrogation d'inventaires) au travers d'une API REST que pourra consommer le portail.
 
