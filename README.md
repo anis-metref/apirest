@@ -24,8 +24,8 @@ Vous êtes responsable d'automatiser la gestion d'une ferme de serveurs via Ansi
 
 ### 4.1. Cloner le projet
 ```bash
-git clone <votre-repo>
-cd ansible-websocket-interface
+git clone (https://github.com/anis-metref/apirest.git)
+cd apirest
 ```
 
 ### 4.2. Créer l'environnement virtuel
