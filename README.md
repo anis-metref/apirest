@@ -18,7 +18,7 @@
 
 ## 3. Contexte du projet
 
-Vous êtes responsable d'automatiser la gestion d'une ferme de serveurs via Ansible. Pour des besoins d'intégration dans un portail interne, vous devez exposer certaines actions Ansible (exécution de playbooks, interrogation d'inventaires) au travers d'une API REST que pourra consommer le portail.
+Vous êtes responsable d'automatiser la gestion d'une ferme de serveurs via Ansible. Pour des besoins d'intégration dans un portail interne, vous devez exposer certaines actions ansible (exécution de playbooks, interrogation d'inventaires) au travers d'une API REST que pourra consommer le portail.
 
 ## 4. Installation et configuration
 
