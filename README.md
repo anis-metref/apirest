@@ -24,7 +24,7 @@ Vous êtes responsable d'automatiser la gestion d'une ferme de serveurs via Ansi
 
 ### 4.1. Cloner le projet
 ```bash
-git clone (https://github.com/anis-metref/apirest.git)
+git clone https://github.com/anis-metref/apirest.git
 cd apirest
 ```
 
