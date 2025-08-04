@@ -43,7 +43,7 @@ pip install -r requirements.txt
 
 ### 4.4. Lancer l'application
 ```bash
-python main.py
+python3 main.py
 ```
 
 ### 4.5. Accéder à l'interface
