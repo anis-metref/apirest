@@ -137,7 +137,7 @@ curl -H "X-API-Key: votre-cle-secrete" http://localhost:8000/inventory
 curl -X POST -H "X-API-Key: votre-cle-secrete" http://localhost:8000/install-apache
 ```
 
-![install-apache](./images/2-websocket.PNG)
+![install-apache](./images/2-websocket.png)
 
 ## 7. Structure du projet
 ```
