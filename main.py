@@ -1,11 +1,16 @@
 # Imports - Bibliothèques nécessaires
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import os, asyncio, json, logging, ansible_runner
 from datetime import datetime
 import uvicorn
+from dotenv import load_dotenv
+
+# Charger les variables d'environnement
+load_dotenv()
 
 # Configuration logs JSON - Pour tracer les actions
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -15,6 +20,34 @@ def log_json(action, status, details=None):
     """Crée des logs en format JSON pour traçabilité"""
     log_data = {"timestamp": datetime.now().isoformat(), "action": action, "status": status, "details": details or {}}
     logger.info(json.dumps(log_data))
+
+# Configuration sécurité API
+API_KEY = os.getenv("API_KEY")  # Clé API depuis .env uniquement
+if not API_KEY:
+    raise ValueError("ERREUR: Variable d'environnement API_KEY manquante. Créez un fichier .env avec API_KEY=votre-cle")
+security = HTTPBearer()
+
+def verify_api_key(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Vérifie la clé API dans le header Authorization"""
+    if credentials.credentials != API_KEY:
+        log_json("api_auth", "failed", {"provided_key": credentials.credentials[:10] + "..."})
+        raise HTTPException(
+            status_code=401, 
+            detail="Clé API invalide. Utilisez 'Authorization: Bearer <votre-cle>'"
+        )
+    log_json("api_auth", "success", {"key_verified": True})
+    return credentials.credentials
+
+def verify_api_key_header(x_api_key: str = Header(None)):
+    """Vérifie la clé API dans le header X-API-Key (alternative)"""
+    if x_api_key != API_KEY:
+        log_json("api_auth", "failed", {"provided_key": x_api_key[:10] + "..." if x_api_key else "None"})
+        raise HTTPException(
+            status_code=401, 
+            detail="Clé API invalide. Utilisez 'X-API-Key: <votre-cle>'"
+        )
+    log_json("api_auth", "success", {"key_verified": True})
+    return x_api_key
 
 # Création application FastAPI
 app = FastAPI(title="Ansible API Simple", version="1.0.0")
@@ -47,9 +80,18 @@ PLAYBOOK_PATH = os.path.join(ANSIBLE_DIR, "playbooks", "install-apache.yml")
 
 @app.get("/")
 def root():
-    """Page d'accueil - Redirige vers l'interface web"""
+    """Page d'accueil - Redirige vers l'interface web - LIBRE (pas de sécurité)"""
     log_json("api_access", "success", {"endpoint": "/"})
-    return {"message": "API Ansible Simple - Fonctionnelle", "interface": "/interface", "api_docs": "/docs"}
+    return {
+        "message": "API Ansible Simple - Fonctionnelle", 
+        "interface": "/interface", 
+        "api_docs": "/docs",
+        "security": {
+            "endpoints_libres": ["/", "/interface", "/docs"],
+            "endpoints_securises": ["/inventory", "/install-apache"],
+            "api_key_required": "X-API-Key: <votre-cle>"
+        }
+    }
 
 @app.get("/interface", response_class=HTMLResponse)
 def get_interface():
@@ -73,8 +115,8 @@ def get_interface():
         raise HTTPException(status_code=500, detail=f"Erreur lors du chargement de l'interface: {str(e)}")
 
 @app.get("/inventory")
-def get_inventory():
-    """Lit et retourne l'inventaire Ansible (liste des serveurs)"""
+def get_inventory(api_key: str = Depends(verify_api_key_header)):
+    """Lit et retourne l'inventaire Ansible (liste des serveurs) - SÉCURISÉ"""
     try:
         if os.path.exists(INVENTORY_PATH):
             with open(INVENTORY_PATH, 'r') as f:
@@ -89,8 +131,8 @@ def get_inventory():
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
 @app.post("/install-apache")
-def install_apache():
-    """Exécute le playbook Ansible pour installer Apache via ansible-runner"""
+def install_apache(api_key: str = Depends(verify_api_key_header)):
+    """Exécute le playbook Ansible pour installer Apache via ansible-runner - SÉCURISÉ"""
     log_json("apache_install", "start", {"method": "POST"})
     try:
         if not os.path.exists(PLAYBOOK_PATH):
@@ -132,9 +174,29 @@ def test_websocket_endpoint():
 
 @app.websocket("/ws/install-apache")
 async def websocket_install_apache(websocket: WebSocket):
-    """WebSocket pour installation Apache en temps réel"""
+    """WebSocket pour installation Apache en temps réel - SÉCURISÉ"""
     await websocket.accept()
     log_json("websocket_connect", "success", {"endpoint": "/ws/install-apache"})
+    
+    # Vérification de la clé API via WebSocket
+    try:
+        # Attendre le premier message avec la clé API
+        auth_message = await websocket.receive_text()
+        auth_data = json.loads(auth_message)
+        
+        if auth_data.get("type") != "auth" or auth_data.get("api_key") != API_KEY:
+            await websocket.send_text(json.dumps({
+                "error": "Authentification requise. Envoyez: {\"type\": \"auth\", \"api_key\": \"votre-cle\"}"
+            }))
+            await websocket.close()
+            return
+        
+        await websocket.send_text(json.dumps({"status": "authenticated", "message": "Authentification réussie"}))
+        
+    except Exception as e:
+        await websocket.send_text(json.dumps({"error": f"Erreur d'authentification: {str(e)}"}))
+        await websocket.close()
+        return
     
     try:
         if not os.path.exists(PLAYBOOK_PATH):
@@ -217,4 +279,3 @@ async def websocket_install_apache(websocket: WebSocket):
 if __name__ == "__main__":
     """Point d'entrée - Lance le serveur FastAPI sur port 8000"""
     uvicorn.run(app, host="0.0.0.0", port=8000, ws_ping_interval=20, ws_ping_timeout=20)
-
