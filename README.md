@@ -141,7 +141,7 @@ curl -X POST -H "X-API-Key: votre-cle-secrete" http://localhost:8000/install-apa
 
 ## 7. Structure du projet
 ```
-ansible-websocket-interface/
+apirest/
 ├── main.py                    # Application FastAPI principale
 ├── requirements.txt           # Dépendances Python
 ├── README.md                  # Documentation
