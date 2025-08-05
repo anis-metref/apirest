@@ -114,7 +114,7 @@ curl -H "Authorization: Bearer votre-cle-secrete" http://localhost:8000/inventor
   - `POST /install-apache` - Installation Apache (SÉCURISÉ)
   - `WebSocket /ws/install-apache` - Exécution temps réel (SÉCURISÉ)
 
-![endpoint](./images/1.PNG)
+![endpoint](./images/1-swagger.png)
 
 ### 6.3. Tests via interface web
 ```bash
@@ -137,7 +137,7 @@ curl -H "X-API-Key: votre-cle-secrete" http://localhost:8000/inventory
 curl -X POST -H "X-API-Key: votre-cle-secrete" http://localhost:8000/install-apache
 ```
 
-![install-apache](./images/2.PNG)
+![install-apache](./images/2-websocket.PNG)
 
 ## 7. Structure du projet
 ```
